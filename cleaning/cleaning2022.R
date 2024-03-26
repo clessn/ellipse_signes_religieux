@@ -21,7 +21,8 @@ clean_df <- tidyr::pivot_longer(raw_df, cols = c(Q101, Q103, Q107, Q98),
   ),
   authority = clean_var(value, target = "authority"),
   teacher = clean_var(value, target = "teacher"),
-  year = 2022) %>%
-  select(year, symbol, authority, teacher)
+  year = 2022,
+  weight = NA) %>%
+  select(year, symbol, authority, teacher, weight)
 
 saveRDS(clean_df, "SignesReligieux2024/Data/cleandata/by_year/data2022.rds")
