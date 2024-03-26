@@ -7,7 +7,6 @@ source("functions.R")
 raw_df <- read.csv("SignesReligieux2024/Data/data_pes_qc2018.csv") %>%
   select(Q18.4, Q18.6, Q18.10, Q18.2)
 
-
 # Clean -------------------------------------------------------------------
 
 clean_df <- tidyr::pivot_longer(raw_df, cols = c(Q18.4, Q18.6, Q18.10, Q18.2),
