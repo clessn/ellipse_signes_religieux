@@ -7,7 +7,7 @@ source("functions.R")
 raw_df <- read.csv("SignesReligieux2024/Data/pes_qc22_relig_symb/2022-11-09_pes_qc22_religious_symb_data.csv") %>%
   select(Q101, Q103, Q107, Q98,
          ## for weighting
-         age_weight, gender_weight, language_weight) %>%
+         age_weight, gender_weight, language_weight, vote_weight) %>%
   mutate(id_respondent = 1:nrow(.))
 
 # Symbols -------------------------------------------------------------------
@@ -45,24 +45,37 @@ raw_df_weights <- raw_df %>%
   langue = case_when(
     language_weight == "FR" ~ "fr",
     language_weight == "EN" ~ "en"),
-  langue = ifelse(!(language_weight %in% c("FR", "EN")), "other", langue)
-  ) %>%
-  select(id_respondent, age, gender, langue) %>%
+  langue = ifelse(!(language_weight %in% c("FR", "EN")), "other", langue),
+vote_int = case_when(
+  vote_weight == "CAQ" ~ "CAQ",
+  vote_weight == "PQ" ~ "PQ",
+  vote_weight == "LIB" ~ "PLQ",
+  vote_weight == "QS" ~ "QS",
+  vote_weight == "CON" ~ "PCQ",
+  vote_weight %in% c("AUT", "Ne sais pas", "VERT")  ~ "other",
+)) %>%
+  select(id_respondent, age, gender, langue, vote_int) %>%
   tidyr::drop_na() %>%
-  fastDummies::dummy_cols(select_columns = c("age", "gender", "langue"),
+  fastDummies::dummy_cols(select_columns = c("age", "gender", "langue", "vote_int"),
                           remove_selected_columns = TRUE)
 
 marginals <- c(`(Intercept)` = 1,
-               age_18_29 = 0.1689,
-               age_30_39 = 0.1586,
-               age_40_49 = 0.1590,
-               age_50_64 = 0.2575,
-               age_65_99 = 0.2560,
-               gender_female = 0.5065,
-               gender_male = 0.4935,
-               langue_fr = 0.8219,
-               langue_en = 0.1295,
-               langue_other = 0.0486)
+               age_18_29 = 0.257,
+               age_30_39 = 0.161,
+               age_40_49 = 0.27,
+               age_50_64 = 0.217,
+               age_65_99 = 0.096,
+               gender_female = 0.508,
+               gender_male = 0.492,
+               langue_fr = 0.771,
+               langue_en = 0.075,
+               langue_other = 0.154,
+               vote_int_CAQ = 0.271,
+               vote_int_PLQ = 0.095,
+               vote_int_PQ = 0.097,
+               vote_int_QS = 0.102,
+               vote_int_PCQ = 0.085,
+               vote_int_other = 0.35)
 tmp_form <- paste(" ~ 1 +", paste(names(marginals)[names(marginals) != "(Intercept)"],
                                   collapse=" + "), sep = "")
 
@@ -74,7 +87,7 @@ surveyDesign <- survey::calibrate(design     = surveyDesign,
                                   formula    = as.formula(tmp_form),
                                   calfun     = "raking",
                                   population = marginals,
-                                  #eps        = 0.005,
+                                  eps        = 0.005,
                                   maxit      = 20000)
 
 weights <- setNames(weights(surveyDesign), 1:length(weights(surveyDesign)))
