@@ -1,6 +1,6 @@
 # Packages ----------------------------------------------------------------
-install.packages("fastDummies")
-install.packages("survey")
+#install.packages("fastDummies")
+#install.packages("survey")
 library(fastDummies)
 library(dplyr)
 source("functions.R")
@@ -93,11 +93,11 @@ marginals <- c(`(Intercept)` = 1,
                langue_fr = 0.771,
                langue_en = 0.075,
                langue_other = 0.154,
-               vote_int_CAQ = 0.248,
-               vote_int_PLQ = 0.164,
+               vote_int_CAQ = 0.249,
+               vote_int_PLQ = 0.165,
                vote_int_PQ = 0.113,
                vote_int_QS = 0.107,
-               vote_int_other = 0.369)
+               vote_int_other = 0.366)
 tmp_form <- paste(" ~ 1 +", paste(names(marginals)[names(marginals) != "(Intercept)"],
                                   collapse=" + "), sep = "")
 
