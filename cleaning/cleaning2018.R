@@ -1,11 +1,14 @@
 # Packages ----------------------------------------------------------------
+install.packages("fastDummies")
+install.packages("survey")
+library(fastDummies)
 library(dplyr)
 source("functions.R")
 
 # Data --------------------------------------------------------------------
 
 raw_df <- read.csv("SignesReligieux2024/Data/data_pes_qc2018.csv") %>%
-  select(Q18.4, Q18.6, Q18.10, Q18.2,
+  select(Q3.1, Q18.4, Q18.6, Q18.10, Q18.2,
          ## for weighting
          Q23.2, Q23.1, UserLanguage, Q21.8) %>%
   mutate(id_respondent = 1:nrow(.))
@@ -21,6 +24,9 @@ table(raw_df$Q23.1)
 # langue
 table(raw_df$UserLanguage, useNA = "always")
 table(raw_df$Q21.8, useNA = "always")
+
+# political party
+table(raw_df$Q3.1)
 
 # Clean -------------------------------------------------------------------
 
@@ -62,13 +68,20 @@ raw_df_weights <- raw_df %>%
   langue = case_when(
     UserLanguage == "FR" ~ "fr",
     UserLanguage == "EN" ~ "en"),
-  langue = ifelse(!(Q21.8 %in% c("French", "Français", "English")), "other", langue)
-  ) %>%
-  select(id_respondent, age, gender, langue) %>%
+  langue = ifelse(!(Q21.8 %in% c("French", "Français", "English")), "other", langue),
+  vote_int = case_when(
+    Q3.1 == "Coalition Avenir Québec" ~ "CAQ",
+    Q3.1 == "Parti Québécois" ~ "PQ",
+    Q3.1 == "Quebec Liberal Party" ~ "PLQ",
+    Q3.1 == "Québec solidaire" ~ "QS",
+    Q3.1 %in% c("Other (please specify)", NA) ~ "other"
+  )) %>%
+  select(id_respondent, age, gender, langue, vote_int) %>%
   tidyr::drop_na() %>%
-  fastDummies::dummy_cols(select_columns = c("age", "gender", "langue"),
+  fastDummies::dummy_cols(select_columns = c("age", "gender", "langue", "vote_int"),
                           remove_selected_columns = TRUE)
 
+# La proportion de gens dans la population pour chacune de ces catégories.
 marginals <- c(`(Intercept)` = 1,
                age_18_34 = 0.257,
                age_35_44 = 0.161,
@@ -79,7 +92,12 @@ marginals <- c(`(Intercept)` = 1,
                gender_male = 0.492,
                langue_fr = 0.771,
                langue_en = 0.075,
-               langue_other = 0.154)
+               langue_other = 0.154,
+               vote_int_CAQ = 0.248,
+               vote_int_PLQ = 0.164,
+               vote_int_PQ = 0.113,
+               vote_int_QS = 0.107,
+               vote_int_other = 0.369)
 tmp_form <- paste(" ~ 1 +", paste(names(marginals)[names(marginals) != "(Intercept)"],
                                   collapse=" + "), sep = "")
 
@@ -104,3 +122,4 @@ clean_df <- df_symbols %>%
 
 # Save --------------------------------------------------------------------
 saveRDS(clean_df, "SignesReligieux2024/Data/cleandata/by_year/data2018.rds")
+
