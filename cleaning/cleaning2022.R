@@ -94,7 +94,7 @@ weights <- setNames(weights(surveyDesign), 1:length(weights(surveyDesign)))
 
 clean_df <- df_symbols %>%
   mutate(weight = weights[id_respondent],
-         year = 2018) %>%
+         year = 2022) %>%
   select(year, symbol, authority, teacher, weight)
 
 saveRDS(clean_df, "SignesReligieux2024/Data/cleandata/by_year/data2022.rds")
