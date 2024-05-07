@@ -12,15 +12,16 @@ data <- readRDS("SignesReligieux2024/Data/cleandata/merged_data.rds") %>%
                       names_to = "position", values_to = "value")
 
 graph_df <- data %>%
-  select(symbol, position, value) %>%
+  select(symbol, position, value, weight) %>%
+  tidyr::drop_na() %>%
   group_by(symbol, position) %>%
-  summarise(proportion = mean(value)) %>%
+  summarise(proportion = weighted.mean(x = value, w = weight)) %>%
   mutate(symbol = recode(symbol,
                          'grosse_croix' = 'Grosse croix',
                          'hijab' = 'Hijab',
                          'pendantif_croissant' = 'Pendantif croissant',
                          'petite_croix' = 'Petite croix'),
-         symbol = factor(symbol, levels = c("Grosse croix", "Petite croix", "Hijab", "Pendantif croissant"))  )
+         symbol = factor(symbol, levels = c("Grosse croix", "Petite croix", "Hijab", "Pendantif croissant")))
 
 
 
