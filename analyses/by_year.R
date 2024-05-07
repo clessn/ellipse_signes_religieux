@@ -12,7 +12,8 @@ data <- readRDS("SignesReligieux2024/Data/cleandata/merged_data.rds") %>%
 graph_df <- data %>%
   tidyr::drop_na() %>%
   group_by(year, symbol, position) %>%
-  summarise(prop = weighted.mean(value, weight, na.rm = TRUE) * 100) %>%
+  summarise(prop = weighted.mean(value, weight, na.rm = TRUE) * 100,
+            n = n()) %>%
   #summarise(n = n()) %>%
   #mutate(prop = n / sum(n) * 100) %>%
   #filter(value == 1) %>%
@@ -28,6 +29,8 @@ graph_df <- data %>%
   ),
   symbol = factor(symbol, levels = c("Grosse croix", "Petite croix", "Hijab", "Pendantif croissant"))
   )
+
+write.csv(graph_df, "/Users/sarah-janevincent/Dropbox/CLESSN/ellipse_signes_religieux/SignesReligieux2024/Data/cleandata/by_year.csv")
 
 # Graph -------------------------------------------------------------------
 
