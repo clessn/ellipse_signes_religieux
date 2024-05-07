@@ -10,10 +10,12 @@ data <- readRDS("SignesReligieux2024/Data/cleandata/merged_data.rds") %>%
 # Wrangling ---------------------------------------------------------------
 
 graph_df <- data %>%
-  group_by(year, symbol, position, value) %>%
-  summarise(n = n()) %>%
-  mutate(prop = n / sum(n) * 100) %>%
-  filter(value == 1) %>%
+  tidyr::drop_na() %>%
+  group_by(year, symbol, position) %>%
+  summarise(prop = weighted.mean(value, weight, na.rm = TRUE) * 100) %>%
+  #summarise(n = n()) %>%
+  #mutate(prop = n / sum(n) * 100) %>%
+  #filter(value == 1) %>%
   mutate(position = case_when(
     position == "authority" ~ "Position d'autorité",
     position == "teacher" ~ "Enseignant"
@@ -48,7 +50,7 @@ ggplot(graph_df,
   guides(color = guide_legend(title = "", nrow = 2)) +
   xlab("") +
   ggtitle("Évolution de la proportion favorisant\nl'interdiction de symboles religieux, 2015-2022") +
-  clessnverse::theme_clean_light() +
+  clessnize::theme_clean_light() +
   theme(axis.text.x = element_text(hjust = 0.5, size = 11),
         axis.text.y = element_text(size = 11),
         axis.title.y = element_text(hjust = 0.5, size = 13),
