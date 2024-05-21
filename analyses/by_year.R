@@ -4,7 +4,8 @@ library(ggplot2)
 
 # Data --------------------------------------------------------------------
 data <- readRDS("SignesReligieux2024/Data/cleandata/merged_data.rds") %>%
-  tidyr::pivot_longer(., cols = c("authority", "teacher"),
+  tidyr::pivot_longer(., cols = c("authority", "teacher", "citizenship",
+                                  "student", "all_public"),
                       names_to = "position", values_to = "value")
 
 # Wrangling ---------------------------------------------------------------
@@ -13,24 +14,9 @@ graph_df <- data %>%
   tidyr::drop_na() %>%
   group_by(year, symbol, position) %>%
   summarise(prop = weighted.mean(value, weight, na.rm = TRUE) * 100,
-            n = n()) %>%
-  #summarise(n = n()) %>%
-  #mutate(prop = n / sum(n) * 100) %>%
-  #filter(value == 1) %>%
-  mutate(position = case_when(
-    position == "authority" ~ "Position d'autorité",
-    position == "teacher" ~ "Enseignant"
-  ),
-  symbol = case_when(
-    symbol == "grosse_croix" ~ "Grosse croix",
-    symbol == "petite_croix" ~ "Petite croix",
-    symbol == "hijab" ~ "Hijab",
-    symbol == "pendantif_croissant" ~ "Pendantif croissant"
-  ),
-  symbol = factor(symbol, levels = c("Grosse croix", "Petite croix", "Hijab", "Pendantif croissant"))
-  )
+            n = n())
 
-write.csv(graph_df, "/Users/sarah-janevincent/Dropbox/CLESSN/ellipse_signes_religieux/SignesReligieux2024/Data/cleandata/by_year.csv")
+write.csv(graph_df, "SignesReligieux2024/Data/cleandata/by_year.csv")
 
 # Graph -------------------------------------------------------------------
 

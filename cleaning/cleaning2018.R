@@ -10,7 +10,7 @@ source("functions.R")
 raw_df <- read.csv("SignesReligieux2024/Data/data_pes_qc2018.csv") %>%
   select(Q3.1, Q18.2, Q18.3, Q18.4, Q18.5, Q18.6, Q18.7, Q18.8, Q18.9, Q18.10, Q18.11,
          ## for weighting
-         Q23.2, Q23.1, UserLanguage, Q21.8) %>%
+         Q23.2, Q23.1, UserLanguage, Q21.8, ResponseId, RecipientEmail) %>%
   mutate(id_respondent = 1:nrow(.))
 
 
@@ -36,7 +36,7 @@ clean_df <- data.frame(
 
 
 # Symbols -----------------------------------------------------------------
-df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, Q18.2, Q18.3, Q18.4, Q18.5, Q18.6, Q18.7, Q18.8, Q18.9, Q18.10, Q18.11),
+df_symbols <- tidyr::pivot_longer(raw_df,
                                   cols = c(Q18.2, Q18.3, Q18.4, Q18.5, Q18.6, Q18.7, Q18.8, Q18.9, Q18.10, Q18.11),
                                 names_to = "symbol", values_to = "value") %>%
   tidyr::drop_na(value) %>%
@@ -53,8 +53,12 @@ df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, Q18.2, Q18.3,
     symbol == "Q18.11" ~ "turban",
   ),
   authority = clean_var(value, target = "authority"),
-  teacher = clean_var(value, target = "teacher")) %>%
-  select(id_respondent, symbol, authority, teacher)
+  teacher = clean_var(value, target = "teacher"),
+  citizenship = clean_var(value, target = "citizenship"),
+  student = clean_var(value, target = "students"),
+  all_public = clean_var(value, target = "all_public")) %>%
+  select(id_respondent, symbol, authority, teacher, citizenship, student, all_public,
+         ResponseId, RecipientEmail)
 
 
 # Weights -----------------------------------------------------------------
@@ -123,7 +127,8 @@ weights <- setNames(weights(surveyDesign), 1:length(weights(surveyDesign)))
 clean_df <- df_symbols %>%
   mutate(weight = weights[id_respondent],
          year = 2018) %>%
-  select(year, symbol, authority, teacher, weight)
+  select(year, symbol, authority, teacher, citizenship, student, all_public,
+         weight, ResponseId, RecipientEmail)
 
 
 # Save --------------------------------------------------------------------

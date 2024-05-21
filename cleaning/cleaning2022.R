@@ -7,13 +7,14 @@ source("functions.R")
 raw_df <- read.csv("SignesReligieux2024/Data/pes_qc22_relig_symb/2022-11-09_pes_qc22_religious_symb_data.csv") %>%
   select(all_of(paste0("Q", 98:108)),
          ## for weighting
-         age_weight, gender_weight, language_weight, vote_weight) %>%
+         age_weight, gender_weight, language_weight, vote_weight,
+         ResponseId, RecipientEmail) %>%
   mutate(id_respondent = 1:nrow(.))
 
 # Symbols -------------------------------------------------------------------
 
-df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, all_of(paste0("Q", 98:108))),
-                                  cols = c(Q101, Q103, Q107, Q98),
+df_symbols <- tidyr::pivot_longer(raw_df,
+                                  cols = paste0("Q", 98:108),
                                 names_to = "symbol", values_to = "value") %>%
   tidyr::drop_na(value) %>%
   mutate(symbol = case_when(
@@ -31,9 +32,13 @@ df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, all_of(paste0
   ),
   authority = clean_var(value, target = "authority"),
   teacher = clean_var(value, target = "teacher"),
+  citizenship = clean_var(value, target = "citizenship"),
+  student = clean_var(value, target = "students"),
+  all_public = clean_var(value, target = "all_public"),
   year = 2022,
   weight = NA) %>%
-  select(id_respondent, symbol, authority, teacher)
+  select(id_respondent, symbol, authority, teacher, citizenship, student, all_public,
+         ResponseId, RecipientEmail)
 
 # Weights ----------------------------------------------------------------
 
@@ -102,6 +107,7 @@ weights <- setNames(weights(surveyDesign), 1:length(weights(surveyDesign)))
 clean_df <- df_symbols %>%
   mutate(weight = weights[id_respondent],
          year = 2022) %>%
-  select(year, symbol, authority, teacher, weight)
+  select(year, symbol, authority, teacher, citizenship, student, all_public,
+         weight, ResponseId, RecipientEmail)
 
 saveRDS(clean_df, "SignesReligieux2024/Data/cleandata/by_year/data2022.rds")
