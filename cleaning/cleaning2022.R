@@ -5,22 +5,29 @@ source("functions.R")
 # Data --------------------------------------------------------------------
 
 raw_df <- read.csv("SignesReligieux2024/Data/pes_qc22_relig_symb/2022-11-09_pes_qc22_religious_symb_data.csv") %>%
-  select(Q101, Q103, Q107, Q98,
+  select(all_of(paste0("Q", 98:108)),
          ## for weighting
          age_weight, gender_weight, language_weight, vote_weight) %>%
   mutate(id_respondent = 1:nrow(.))
 
 # Symbols -------------------------------------------------------------------
 
-df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, Q101, Q103, Q107, Q98),
+df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, all_of(paste0("Q", 98:108))),
                                   cols = c(Q101, Q103, Q107, Q98),
                                 names_to = "symbol", values_to = "value") %>%
   tidyr::drop_na(value) %>%
   mutate(symbol = case_when(
+    symbol == "Q98" ~ "grosse_croix",
+    symbol == "Q99" ~ "burqa",
+    symbol == "Q100" ~ "chador",
     symbol == "Q101" ~ "hijab",
+    symbol == "Q102" ~ "david",
     symbol == "Q103" ~ "pendantif_croissant",
+    symbol == "Q104" ~ "kippa",
+    symbol == "Q105" ~ "kirpan",
+    symbol == "Q106" ~ "niqab",
     symbol == "Q107" ~ "petite_croix",
-    symbol == "Q98" ~ "grosse_croix"
+    symbol == "Q108" ~ "turban"
   ),
   authority = clean_var(value, target = "authority"),
   teacher = clean_var(value, target = "teacher"),
