@@ -7,7 +7,7 @@ source("functions.R")
 raw_df <- read.csv("SignesReligieux2024/Data/data_pes_canada2015_weights.csv") %>%
   ### filter for Quebec
   filter(X1.2 == "Quebec") %>%
-  select(X, all_of(paste0("X16.", 2:12)), weight)
+  select(X, all_of(paste0("X16.", 2:12)), ResponseId, RecipientEmail, weight)
 
 # Clean -------------------------------------------------------------------
 clean_df <- tidyr::pivot_longer(raw_df, cols = starts_with("X16"),
@@ -29,6 +29,6 @@ clean_df <- tidyr::pivot_longer(raw_df, cols = starts_with("X16"),
   authority = clean_var(value, target = "authority"),
   teacher = clean_var(value, target = "teacher"),
   year = 2015) %>%
-  select(year, symbol, authority, teacher, weight)
+  select(year, symbol, authority, teacher, weight, ResponseId, RecipientEmail)
 
 saveRDS(clean_df, "SignesReligieux2024/Data/cleandata/by_year/data2015.rds")
