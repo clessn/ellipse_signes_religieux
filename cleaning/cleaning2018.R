@@ -8,7 +8,7 @@ source("functions.R")
 # Data --------------------------------------------------------------------
 
 raw_df <- read.csv("SignesReligieux2024/Data/data_pes_qc2018.csv") %>%
-  select(Q3.1, Q18.4, Q18.6, Q18.10, Q18.2,
+  select(Q3.1, Q18.2, Q18.3, Q18.4, Q18.5, Q18.6, Q18.7, Q18.8, Q18.9, Q18.10, Q18.11,
          ## for weighting
          Q23.2, Q23.1, UserLanguage, Q21.8) %>%
   mutate(id_respondent = 1:nrow(.))
@@ -36,15 +36,21 @@ clean_df <- data.frame(
 
 
 # Symbols -----------------------------------------------------------------
-df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, Q18.4, Q18.6, Q18.10, Q18.2),
-                                  cols = c(Q18.4, Q18.6, Q18.10, Q18.2),
+df_symbols <- tidyr::pivot_longer(raw_df %>% select(id_respondent, Q18.2, Q18.3, Q18.4, Q18.5, Q18.6, Q18.7, Q18.8, Q18.9, Q18.10, Q18.11),
+                                  cols = c(Q18.2, Q18.3, Q18.4, Q18.5, Q18.6, Q18.7, Q18.8, Q18.9, Q18.10, Q18.11),
                                 names_to = "symbol", values_to = "value") %>%
   tidyr::drop_na(value) %>%
   mutate(symbol = case_when(
+    symbol == "Q18.2" ~ "grosse_croix",
+    symbol == "Q18.3" ~ "burqa",
     symbol == "Q18.4" ~ "hijab",
+    symbol == "Q18.5" ~ "david",
     symbol == "Q18.6" ~ "pendantif_croissant",
+    symbol == "Q18.7" ~ "kippa",
+    symbol == "Q18.8" ~ "kirpan",
+    symbol == "Q18.9" ~ "niqab",
     symbol == "Q18.10" ~ "petite_croix",
-    symbol == "Q18.2" ~ "grosse_croix"
+    symbol == "Q18.11" ~ "turban",
   ),
   authority = clean_var(value, target = "authority"),
   teacher = clean_var(value, target = "teacher")) %>%
